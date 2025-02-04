@@ -11,8 +11,15 @@ export class AuthService {
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken()); // Initialize state based on token in localStorage
 
   loggedIn$ = this.loggedInSubject.asObservable(); // Observable to expose login state for the UI
+  authService: any;
 
   constructor(private http: HttpClient) {}
+  ngOnInit() {
+    // Subscribe to the logged-in state
+    this.authService.loggedIn$.subscribe((isLoggedIn: () => boolean) => {
+      this.isLoggedIn = isLoggedIn;
+    });
+  }
 
   register(username: string, email: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, { username, email, password });
@@ -25,6 +32,7 @@ export class AuthService {
       .pipe(
         map((response: any) => {
           if (response && response.token) {
+            localStorage.setItem('userId', response.userId);
             localStorage.setItem('authToken', response.token); // Store the token
             localStorage.setItem('username', username); // Store the username
             this.loggedInSubject.next(true); // Notify observers that the user is logged in
@@ -37,6 +45,8 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('authToken');
     localStorage.removeItem('username');
+    localStorage.removeItem('userId'); 
+    localStorage.clear();// Assuming userId is stored on login
     this.loggedInSubject.next(false); // Notify observers that the user is logged out
   }
  
@@ -54,4 +64,8 @@ export class AuthService {
   getUsername(): string | null {
     return localStorage.getItem('username'); // Retrieve username from localStorage
   }
+  getUserId(): string | null {
+    return localStorage.getItem('userId');  // Assuming userId is stored on login
+  }
+  
 }

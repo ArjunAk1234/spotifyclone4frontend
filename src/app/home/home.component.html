@@ -1,261 +1,53 @@
-<!-- 
-<div class="spotify-sidebar">
-  <h4 class="spotify-logo">Spotify</h4>
-  <ul class="nav-links">
-    <li *ngIf="!isLoggedIn"><a routerLink="/login">Login</a></li>
-    <li *ngIf="isLoggedIn"><a routerLink="/liked-songs">Liked Songs</a></li>
-    <li *ngIf="isLoggedIn"><a routerLink="/playlists">Playlists</a></li>
-    <li *ngIf="isLoggedIn"><button (click)="logout()" class="logout-btn">Logout</button></li>
-  </ul>
-</div>
-
-<div class="spotify-main">
-  <div class="home-container">
-    <div class="home-card text-center">
-      <div *ngIf="songs.length > 0">
-        <div class="dfg" *ngIf="isLoggedIn">
-          <div *ngFor="let song of songs" class="song-item">
-            <img [src]="'http://localhost:3000/public/' + song.albumCover" alt="Album Cover" class="album-cover">
-            <div class="song-info">
-              <p>{{ song.title }} by {{ song.artist }}</p>
-              <button (click)="playSong(song)" class="btn btn-primary">
-                {{ currentSong && currentSong._id === song._id ? 'Pause' : 'Play' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <p *ngIf="!isLoggedIn" class="mt-3 text-danger">
-        Please log in to access the Spotify content.
-      </p>
-    </div>
-  </div>
-</div> -->
-
-<!-- <div class="spotify-sidebar">
-  <h4 class="spotify-logo">Spotify</h4>
-  <ul class="nav-links">
-    <li *ngIf="!isLoggedIn"><a routerLink="/login">Login</a></li>
-    <li *ngIf="isLoggedIn"><a routerLink="/liked-songs">Liked Songs</a></li>
-    <li *ngIf="isLoggedIn"><a routerLink="/playlists">Playlists</a></li>
-    <li *ngIf="isLoggedIn"><button (click)="logout()" class="logout-btn">Logout</button></li>
-  </ul>
-</div>
-
-
-<div class="spotify-main">
-  <div class="home-container">
-    <div class="home-card text-center">
-      <div *ngIf="songs.length > 0">
-        <div class="dfg" *ngIf="isLoggedIn">
-          <div *ngFor="let song of songs" class="song-item">
-            <img [src]="'http://localhost:3000/public/' + song.albumCover" alt="Album Cover" class="album-cover">
-            <div class="song-info">
-              <p>{{ song.title }} by {{ song.artist }}</p>
-              <button (click)="playSong(song)" class="btn btn-primary">
-                {{ currentSong && currentSong._id === song._id ? 'Pause' : 'Play' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <p *ngIf="!isLoggedIn" class="mt-3 text-danger">
-        Please log in to access the Spotify content.
-      </p>
-    </div>
-
-  
-    <div *ngIf="currentSong" class="controls">
-      <button (click)="previousSong()" class="btn btn-secondary">Previous</button>
-      <button (click)="nextSong()" class="btn btn-secondary">Next</button>
-      <div class="volume-control">
-        <label for="volume">Volume: </label>
-        <input
-          type="range"
-          id="volume"
-          min="0"
-          max="1"
-          step="0.01"
-          [(ngModel)]="volume"
-          (change)="setVolume(volume)"
-        />
-      </div>
-    </div>
-  </div>
-</div> -->
-
-<!-- 
-<div class="spotify-sidebar">
-  <h4 class="spotify-logo">Spotify</h4>
-  <ul class="nav-links">
-    <li *ngIf="!isLoggedIn"><a routerLink="/login">Login</a></li>
-    <li *ngIf="isLoggedIn"><a routerLink="/liked-songs">Liked Songs</a></li>
-    <li *ngIf="isLoggedIn"><a routerLink="/playlists">Playlists</a></li>
-    <li *ngIf="isLoggedIn"><button (click)="logout()" class="logout-btn">Logout</button></li>
-  </ul>
-</div>
-
-<div class="spotify-main">
-  <div class="home-container">
-    <div class="home-card text-center">
-      <div *ngIf="songs.length > 0">
-        <div class="dfg" *ngIf="isLoggedIn">
-         
-          <div *ngFor="let song of songs" 
-               class="song-item" 
-               [class.enlarged]="currentSong && currentSong._id === song._id"
-               (click)="playSong(song)">
-            <img [src]="'http://localhost:3000/public/' + song.albumCover" alt="Album Cover" class="album-cover">
-            <div class="song-info">
-              <p>{{ song.title }} by {{ song.artist }}</p>
-              <button (click)="playSong(song)" class="btn btn-primary">
-                {{ isSongPlaying && currentSong && currentSong._id === song._id ? 'Pause' : 'Play' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <p *ngIf="!isLoggedIn" class="mt-3 text-danger">
-        Please log in to access the Spotify content.
-      </p>
-    </div>
-  </div>
-</div>
-
-<div *ngIf="currentSong" class="bottom-bar">
-  <div class="song-player">
-    <img [src]="'http://localhost:3000/public/' + currentSong.albumCover" alt="Album Cover" class="album-cover-large">
-    <div class="song-info">
-      <p>{{ currentSong.title }} - {{ currentSong.artist }}</p>
-    </div>
-    <div class="controls">
-      <button (click)="previousSong()" class="btn btn-secondary">Previous</button>
-      <button (click)="playSong(currentSong)" class="btn btn-primary">
-        {{ isSongPlaying ? 'Pause' : 'Play' }}
-      </button>
-      <button (click)="nextSong()" class="btn btn-secondary">Next</button>
-      
-      <div class="seek-bar">
-        <input 
-          type="range" 
-          min="0" 
-          max="100" 
-          [(ngModel)]="seekPosition"
-          (input)="setSeekPosition($event)"
-        />
-      </div>
-
-      <div class="volume-control">
-        <label for="volume">Volume: </label>
-        <input
-          type="range"
-          id="volume"
-          min="0"
-          max="1"
-          step="0.01"
-          [(ngModel)]="volume"
-          (change)="setVolume(volume)"
-        />
-      </div>
-    </div>
-  </div>
-</div>  -->
-
-
-
-<!-- <div class="spotify-sidebar">
-  <h4 class="spotify-logo">Spotify</h4>
-  <ul class="nav-links">
-    <li *ngIf="!isLoggedIn"><a routerLink="/login">Login</a></li>
-    <li *ngIf="isLoggedIn"><a routerLink="/liked-songs">Liked Songs</a></li>
-    <li *ngIf="isLoggedIn"><a routerLink="/playlists">Playlists</a></li>
-    <li *ngIf="isLoggedIn"><button (click)="logout()" class="logout-btn">Logout</button></li>
-  </ul>
-</div>
-
-
-<div class="spotify-main">
-  <div class="home-container">
-    <div class="home-card text-center">
-      <div *ngIf="songs.length > 0">
-        <div class="dfg" *ngIf="isLoggedIn">
-       
-          <div *ngFor="let song of songs" 
-               class="song-item" 
-               [class.playing]="currentSong && currentSong._id === song._id"
-               (click)="playSong(song)">
-            <img [src]="'http://localhost:3000/public/' + song.albumCover" alt="Album Cover" class="album-cover">
-            <div class="song-info">
-              <p>{{ song.title }} by {{ song.artist }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <p *ngIf="!isLoggedIn" class="mt-3 text-danger">
-        Please log in to access the Spotify content.
-      </p>
-    </div>
-  </div>
-</div>
-
-
-<div *ngIf="currentSong" class="bottom-bar">
-  <div class="song-player">
-    <img [src]="'http://localhost:3000/public/' + currentSong.albumCover" alt="Album Cover" class="album-cover-large">
-    <div class="song-info">
-      <p>{{ currentSong.title }} - {{ currentSong.artist }}</p>
-    </div>
-    <div class="controls">
-      <button (click)="previousSong()" class="btn btn-secondary">Previous</button>
-      <button (click)="playSong(currentSong)" class="btn btn-primary">
-        {{ isSongPlaying ? 'Pause' : 'Play' }}
-      </button>
-      <button (click)="nextSong()" class="btn btn-secondary">Next</button>
-      
-      <div class="seek-bar">
-        <input 
-          type="range" 
-          min="0" 
-          max="100" 
-          [(ngModel)]="seekPosition"
-          (input)="setSeekPosition($event)"
-        />
-      </div>
-
-      <div class="volume-control">
-        <label for="volume">Volume: </label>
-        <input
-          type="range"
-          id="volume"
-          min="0"
-          max="1"
-          step="0.01"
-          [(ngModel)]="volume"
-          (change)="setVolume(volume)"
-        />
-      </div>
-    </div>
-  </div>
-</div> -->
-<!-- Top Navbar -->
-<!-- Top Navbar -->
+<!-- Navbar -->
 <div class="navbar">
   <h4 class="navbar-logo">Spotify</h4>
   <div class="navbar-search">
     <input type="text" placeholder="Search" class="search-bar" [(ngModel)]="searchQuery" (input)="searchSongs()">
   </div>
   <div class="navbar-login">
-    <span *ngIf="isLoggedIn">Welcome, {{ username }}</span>
+    <span *ngIf="isLoggedIn" class="navbar-login2">Welcome {{ username }}  </span>
     <button *ngIf="!isLoggedIn" (click)="goToLogin()">Login</button>
     <button *ngIf="isLoggedIn" (click)="logout()">Logout</button>
+    <!-- Upload Song Button -->
+    <button *ngIf="isLoggedIn" (click)="openUploadSongModal()" class="btn btn-primary">Upload Song</button>
+  </div>
+</div>
+<div *ngIf="showUploadSongModal" class="modal12">
+  <div class="modal-content1">
+    <h3>Upload Song</h3>
+    
+    <!-- Song file input -->
+    <input type="file" (change)="onFileChange($event, 'song')" />
+    <!-- Album cover input -->
+    <input type="file" (change)="onFileChange($event, 'albumCover')" />
+    
+    <input type="text" [(ngModel)]="newSong.title" placeholder="Song Title" class="input-field" />
+    <input type="text" [(ngModel)]="newSong.artist" placeholder="Artist Name" class="input-field" />
+    
+    <button (click)="uploadSong()" class="btn btn-primary1" [disabled]="!newSong.title || !newSong.artist || !newSong.songFile">
+      Upload
+    </button>
+    
+    <button (click)="closeUploadSongModal()" class="btn btn-secondary1">Cancel</button>
   </div>
 </div>
 
+
 <!-- Sidebar -->
 <div class="spotify-sidebar">
+  <a class="spotify-logo" (click)="goTohome()">Spotify</a>
   <ul class="nav-links">
     <li *ngIf="isLoggedIn"><a routerLink="/liked-songs">Liked Songs</a></li>
-    <li *ngIf="isLoggedIn"><a routerLink="/playlists">Playlists</a></li>
+    
+    <!-- Playlist Section -->
+    <div *ngIf="isLoggedIn">
+      <button (click)="createPlaylist()" class="btn btn-primary">Playlists + </button>
+      <ul class="playlist-list">
+        <li *ngFor="let playlist of playlists" (click)="selectPlaylist(playlist)" class="playlist-item">
+          <h2>{{ playlist.name }}</h2>
+        </li>
+      </ul>
+    </div>
   </ul>
 </div>
 
@@ -263,22 +55,61 @@
 <div class="spotify-main">
   <div class="home-container">
     <div class="home-card text-center">
-      <div *ngIf="filteredSongs.length > 0">
-       
-          <!-- Song Cards -->
-          <div *ngFor="let song of filteredSongs" 
-               class="song-item" 
-               [class.playing]="currentSong && currentSong._id === song._id"
-               (click)="playSong(song)">
+      
+      <!-- Show Playlist Songs -->
+      <div *ngIf="selectedPlaylist">
+        <h3 class="playlist-title">{{ selectedPlaylist.name }}</h3>
+        <button (click)="showAddSongModal()" class="btn btn-secondary">+ Add Songs</button>
+        <button *ngFor="let playlist of playlists" (click)="removePlaylist(playlist._id)" class="btn btn-danger">Delete</button>
+        <ul class="playlist-songs">
+          <li *ngFor="let song of selectedPlaylist.songs" class="song-item" (click)="playSong(song)">
             <img [src]="'http://localhost:3000/public/' + song.albumCover" alt="Album Cover" class="album-cover">
             <div class="song-info">
-              <p>{{ song.title }} by {{ song.artist }}</p>
+              <p class="song-title">{{ song.title }}</p>
+              <p class="song-artist">{{ song.artist }}</p>
             </div>
-          </div>
-      
+            <button (click)="removeSongFromPlaylist(song._id)" class="btn btn-danger">Remove</button>
+          </li>
+        </ul>
       </div>
-      
+
+      <!-- Default View: Show All Songs -->
+      <div *ngIf="!selectedPlaylist && filteredSongs.length > 0">
+        <h3>All Songs</h3>
+        <div *ngFor="let song of filteredSongs" class="song-item" (click)="playSong(song)">
+          <img [src]="'http://localhost:3000/public/' + song.albumCover" alt="Album Cover" class="album-cover">
+          <div class="song-info">
+            <p class="song-title">{{ song.title }}</p>
+            <p class="song-artist">{{ song.artist }}</p>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
+</div>
+
+<!-- Add Song Modal -->
+<div *ngIf="showSongModal" class="modal">
+  <div class="modal-content">
+    <h3>Select Songs to Add</h3>
+
+    <!-- Show message if no songs are available -->
+    <p *ngIf="filteredSongs.length === 0" class="no-songs-message">No songs available to add.</p>
+
+    <input type="text" [(ngModel)]="songSearchQuery" placeholder="Search Songs" (input)="filterSongs()" class="search-bar" />
+    
+    <ul *ngIf="filteredSongs.length > 0" class="song-selection-list">
+      <li *ngFor="let song of filteredSongs" class="selectable-song">
+        <input type="checkbox" [checked]="selectedSongs.has(song._id)" (change)="toggleSongSelection(song)" />
+        {{ song.title }} by {{ song.artist }}
+      </li>
+    </ul>
+
+    <button (click)="confirmAddSongs()" class="btn btn-primary" [disabled]="selectedSongs.size === 0">
+      Add Selected
+    </button>
+    <button (click)="closeSongModal()" class="btn btn-secondary">Cancel</button>
   </div>
 </div>
 
@@ -318,4 +149,3 @@
     </div>
   </div>
 </div>
-

@@ -14,12 +14,13 @@ import { HomeComponent } from './home/home.component';
 import { SignupComponent } from './signup/signup.component';
 
 
+
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     HomeComponent,
-    SignupComponent,
+    SignupComponent
 
   ],
   imports: [
