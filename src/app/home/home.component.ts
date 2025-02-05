@@ -9,8 +9,9 @@ export interface Song {
   title: string;
   artist: string;
   genre: string;
-  url: string;
-  albumCover?: string; // Make albumCover optional to prevent undefined errors
+  // file: string;
+  file: string | { type: 'Buffer'; data: number[] };
+  albumCover: string; // Make albumCover optional to prevent undefined errors
 }
 
 export interface Playlist {
@@ -25,7 +26,8 @@ export interface Playlist {
   styleUrls: ['./home.component.css'],
 })
 export class HomeComponent implements OnInit {
-  isLoggedIn = false;
+  isLoggedIn:boolean=false;
+  isLoading: boolean = false; 
   username = '';
   songs: Song[] = [];
   filteredSongs: Song[] = [];
@@ -43,7 +45,9 @@ export class HomeComponent implements OnInit {
   showSongModal = false;
   songSearchQuery = '';
   selectedSongs: Set<string> = new Set(); 
-  newSong = { title: '', artist: '', songFile: null as File | null, albumCoverFile: null as File | null }; // Store file and details
+  // newSong = { title: '', artist: '', songFile: null as File | null, albumCoverFile: null as File | null }; // Store file and details
+  newSong = { title: '', artist: '', songFile: null as File | null, albumCoverFile: null as File | null };
+  uri12 = 'http://localhost:3000';
 
   constructor(
     private authService: AuthService,
@@ -57,7 +61,7 @@ export class HomeComponent implements OnInit {
       this.isLoggedIn = state;
       this.fetchSongs();
       if (state) {
-        this.username = this.authService.getUsername() || 'User';
+        this.username = this.authService.getUsername() || 'User , please logout and re-login';
         this.fetchPlaylists();
       }
     });
@@ -68,66 +72,46 @@ export class HomeComponent implements OnInit {
       }
     });
   }
+  
+fetchSongs(): void {
+  localStorage.setItem("isLoading","true")
+  this.isLoading = true; // Show loading spinner while fetching songs
+  console.log(this.isLoading);
+  this.http.get<Song[]>(`${this.uri12}/songs`).subscribe({
+    next: (data) => {
+      console.log("Fetched songs:", data); // Debugging output
+      this.songs = data.map(song => ({
+        _id: song._id,
+        title: song.title,
+        artist: song.artist,
+        genre: song.genre,
+        file: song.file,
+        albumCover: song.albumCover ? `${this.uri12}/album-cover/${song._id}` : 'assets/default-cover.jpg' // ✅ Set correct image URL
+      }));
+      this.filteredSongs = [...this.songs];
+      this.isLoading = false; // Hide loading spinner after fetching songs
+      localStorage.setItem("isLoading","false")
+    },
+    error: (err) => console.error('Error fetching songs:', err),
+  });
+  this.isLoading=false;
+}
 
-  fetchSongs(): void {
-    this.http.get<Song[]>('http://localhost:3000/songs').subscribe({
-      next: (data) => {
-        this.songs = data.filter(song => song); // Filter out any null values
-        this.filteredSongs = [...this.songs]; // Ensure filteredSongs is updated
-      },
-      error: (err) => console.error('Error fetching songs:', err),
-    });
-  }
+isLoading1(): any{
+
+  return localStorage.getItem("isLoading")==='true';
+}
+
 
   fetchPlaylists(): void {
-    this.http.get<Playlist[]>('http://localhost:3000/playlists').subscribe({
+    this.http.get<Playlist[]>(`${this.uri12}/playlists`).subscribe({
       next: (data) => {
         this.playlists = data;
       },
       error: (err) => console.error('Error fetching playlists:', err),
     });
   }
-  // openUploadSongModal(): void {
-  //   this.showUploadSongModal = true;
-  // }
 
-  // // Close the upload song modal
-  // closeUploadSongModal(): void {
-  //   this.showUploadSongModal = false;
-  //   this.newSong = { title: '', artist: '', file: null }; // Reset the form fields
-  // }
-  //   // Handle the file selection
-  //   onFileChange(event: any): void {
-  //     const file = event.target.files[0];
-  //     if (file) {
-  //       this.newSong.file = file; // Store the file object
-  //     }
-  //   }
-  
-  //   // Handle the upload song
-  //   uploadSong(): void {
-  //     if (!this.newSong.file || !this.newSong.title || !this.newSong.artist) {
-  //       alert('Please fill all fields');
-  //       return;
-  //     }
-  
-  //     const formData = new FormData();
-  //     formData.append('file', this.newSong.file); // Append file
-  //     formData.append('title', this.newSong.title);
-  //     formData.append('artist', this.newSong.artist);
-  
-  //     this.http.post('http://localhost:3000/upload-song', formData).subscribe({
-  //       next: (response) => {
-  //         console.log('Song uploaded successfully:', response);
-  //         this.closeUploadSongModal(); // Close the modal after uploading
-  //         this.fetchSongs(); // Refresh the song list
-  //       },
-  //       error: (err) => {
-  //         console.error('Error uploading song:', err);
-  //         alert('Failed to upload song. Please try again.');
-  //       },
-  //     });
-  //   }
   openUploadSongModal(): void {
     this.showUploadSongModal = true;
   }
@@ -150,7 +134,6 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  // Handle the upload song
   uploadSong(): void {
     if (!this.newSong.songFile || !this.newSong.title || !this.newSong.artist) {
       alert('Please fill all fields');
@@ -159,18 +142,17 @@ export class HomeComponent implements OnInit {
   
     const formData = new FormData();
     formData.append('file', this.newSong.songFile); // Song file
-    // Only append album cover if it's not null
     if (this.newSong.albumCoverFile) {
       formData.append('albumCover', this.newSong.albumCoverFile); // Album cover file
     }
     formData.append('title', this.newSong.title);
     formData.append('artist', this.newSong.artist);
   
-    this.http.post('http://localhost:3000/upload-song', formData).subscribe({
+    this.http.post(`${this.uri12}/upload-song`, formData).subscribe({
       next: (response) => {
         console.log('Song uploaded successfully:', response);
-        this.closeUploadSongModal(); // Close the modal after uploading
-        this.fetchSongs(); // Refresh the song list
+        this.closeUploadSongModal();  // Close the modal after uploading
+        this.fetchSongs();  // Refresh the song list
       },
       error: (err) => {
         console.error('Error uploading song:', err);
@@ -179,12 +161,18 @@ export class HomeComponent implements OnInit {
     });
   }
   
-
-
+  
   selectPlaylist(playlist: Playlist): void {
-    this.selectedPlaylist = playlist;
-    this.filteredSongs = [...playlist.songs]; // Update UI instantly
+    this.selectedPlaylist = {
+      ...playlist,
+      songs: playlist.songs.map(song => ({
+        ...song,
+        albumCover: song.albumCover ? `${this.uri12}/album-cover/${song._id}` : 'assets/default-cover.jpg'
+      }))
+    };
+    this.filteredSongs = [...this.selectedPlaylist.songs]; // Ensure UI updates
   }
+  
 
   showAddSongModal(): void {
    
@@ -232,55 +220,51 @@ export class HomeComponent implements OnInit {
   goToLogin(): void {
     this.router.navigate(['/login']); // Programmatically navigate to the login page
   }
+  gotologout(): void {
+    localStorage.setItem("isLoggedIn",'false');
+    this.router.navigate(['/logout']); // Programmatically navigate to the login page
+  }
   goTohome(): void {
     window.location.reload() // Programmatically navigate to the login page
   }
 
-  // }
+ 
   confirmAddSongs(): void {
     if (!this.selectedPlaylist || this.selectedSongs.size === 0) {
       alert('No songs selected.');
       return;
     }
   
-    console.log('Song IDs to add:', this.selectedSongs); // Debugging output
+    console.log('Adding Songs:', this.selectedSongs);
   
     this.selectedSongs.forEach(songId => {
-      const song = this.songs.find(s => s._id === songId); // Ensure the song exists
-      if (song) {
-        this.addSongToPlaylist(song); // Call addSongToPlaylist with each song
-      } else {
-        console.error('Song not found in local list:', songId);
-      }
+      this.addSongToPlaylist(songId);
     });
   
     this.closeSongModal();
   }
-  
 
-  addSongToPlaylist(song: Song): void {
+  
+  addSongToPlaylist(songId: string): void {
     if (!this.selectedPlaylist || !this.selectedPlaylist._id) {
       console.error("No playlist selected.");
       return;
     }
   
-    console.log(`Adding song: ${song._id} to playlist: ${this.selectedPlaylist._id}`); // Debugging output
+    console.log(`Adding Song: ${songId} to Playlist: ${this.selectedPlaylist._id}`);
   
-    this.http
-      .post<Playlist>(`http://localhost:3000/playlists/${this.selectedPlaylist._id}/songs`, { songId: song._id })
+    this.http.post<Playlist>(`${this.uri12}/playlists/${this.selectedPlaylist._id}/songs`, { songId })
       .subscribe({
         next: (updatedPlaylist) => {
           if (this.selectedPlaylist && this.selectedPlaylist._id === updatedPlaylist._id) {
             this.selectedPlaylist.songs = [...updatedPlaylist.songs];
           }
-          this.showSongModal = false;
+          console.log('Song Added Successfully:', songId);
         },
         error: (err) => console.error('Error adding song:', err),
       });
       window.location.reload();
   }
-  
-
   
   removeSongFromPlaylist(songId: string): void {
     
@@ -290,7 +274,7 @@ export class HomeComponent implements OnInit {
     }
   
     this.http.delete<{ success: boolean; updatedPlaylist: Playlist }>(
-      `http://localhost:3000/playlists/${this.selectedPlaylist._id}/songs/${songId}`
+     `${this.uri12}/playlists/${this.selectedPlaylist!._id}/songs/${songId}`
     ).subscribe({
       next: (response) => {
         if (response.success) {
@@ -310,20 +294,22 @@ export class HomeComponent implements OnInit {
     });
     window.location.reload();
   }
+
+  
   removePlaylist(playlistId: string): void {
-    console.log(playlistId);
     if (!confirm('Are you sure you want to delete this playlist?')) return;
   
-    this.http.delete<{ success: boolean }>(`http://localhost:3000/playlists/${playlistId}`)
+    console.log(`Deleting Playlist: ${playlistId}`);
+  
+    this.http.delete<{ success: boolean }>(`${this.uri12}/playlists/${playlistId}`)
       .subscribe({
         next: (response) => {
           if (response.success) {
-            // Remove the deleted playlist from the UI
             this.playlists = this.playlists.filter(p => p._id !== playlistId);
-            this.selectedPlaylist = null; // Reset selected playlist
-            this.filteredSongs = [...this.songs]; // Reset song list
+            this.selectedPlaylist = null;
+            this.filteredSongs = [...this.songs];
   
-            console.log('Playlist removed successfully:', playlistId);
+            console.log('Playlist Removed Successfully:', playlistId);
           } else {
             console.error('Failed to remove playlist');
           }
@@ -335,53 +321,68 @@ export class HomeComponent implements OnInit {
       });
   }
   
- 
   
 
-  playSong(song: Song): void {
-    if (!song || !song.url) return; // Ensure valid song object
-    if (this.currentSong && this.currentSong._id === song._id) {
-      this.isSongPlaying ? this.audio.pause() : this.audio.play();
-      this.isSongPlaying = !this.isSongPlaying;
-    } else {
-      this.audio.src = `http://localhost:3000/${song.url}`;
-      this.audio.play();
-      this.currentSong = song;
-      this.isSongPlaying = true;
-      this.currentIndex = this.songs.findIndex(s => s._id === song._id);
-    }
+  
+
+playSong(song: Song): void {
+  if (!song || !song.file) {
+    console.error('No song or file provided.');
+    return;
   }
-  // playSong(song: Song): void {
-  //   if (!song || !song.url) return; // Ensure valid song object
-  //   const audioUrl = `http://localhost:3000${song.url}`; // Prefix the URL with the base URL
-  
-  //   if (this.currentSong && this.currentSong._id === song._id) {
-  //     this.isSongPlaying ? this.audio.pause() : this.audio.play();
-  //     this.isSongPlaying = !this.isSongPlaying;
-  //   } else {
-  //     this.audio.src = audioUrl; // Set the source to the correct URL
-  //     this.audio.play();
-  //     this.currentSong = song;
-  //     this.isSongPlaying = true;
-  //     this.currentIndex = this.songs.findIndex(s => s._id === song._id);
-  //   }
-  // }
-  
 
+  if (this.currentSong && this.currentSong._id === song._id) {
+    // Toggle play/pause if the same song is clicked
+    if (this.isSongPlaying) {
+      this.audio.pause();
+      this.isSongPlaying = false;
+    } else {
+      this.audio.play();
+      this.isSongPlaying = true;
+    }
+    return;
+  }
+
+  // If a different song is clicked, stop the current one
+  this.audio.pause();
+  this.audio.currentTime = 0; // Reset time for new song
+
+  if (typeof song.file === 'string') {
+    // Case 1: File is a URL/path
+    this.audio.src = `${this.uri12}/songs/${song._id}`; // Ensure correct URL
+  } else if (typeof song.file === 'object' && song.file.type === 'Buffer' && Array.isArray(song.file.data)) {
+    // Case 2: File is stored as a buffer
+    const byteArray = new Uint8Array(song.file.data);
+    const blob = new Blob([byteArray.buffer], { type: 'audio/mp3' });
+    const audioUrl = URL.createObjectURL(blob);
+    this.audio.src = audioUrl;
+  } else {
+    console.error('Invalid file format:', song.file);
+    return;
+  }
+
+  this.audio.load();
+  this.audio.play().then(() => {
+    this.isSongPlaying = true;
+    this.currentSong = song;
+    this.currentIndex = this.songs.findIndex(s => s._id === song._id);
+  }).catch(err => {
+    console.error('Error playing song:', err);
+  });
+}
+
+   
+  
   logout(): void {
+    localStorage.setItem('isLoggedIn1', "false"); 
     this.authService.logout();
     this.router.navigate(['/']);
   }
 
-  // nextSong(): void {
-  //   this.currentIndex = (this.currentIndex + 1) % this.songs.length;
-  //   this.playSong(this.songs[this.currentIndex]);
-  // }
-
-  // previousSong(): void {
-  //   this.currentIndex = (this.currentIndex - 1 + this.songs.length) % this.songs.length;
-  //   this.playSong(this.songs[this.currentIndex]);
-  // }
+  isloggedin1(): boolean{
+    return this.username == "User , please logout and re-login";
+  }
+ 
   nextSong(): void {
     const songList = this.selectedPlaylist ? this.selectedPlaylist.songs : this.songs;
     
@@ -428,13 +429,15 @@ export class HomeComponent implements OnInit {
     }
   }
 
+
   createPlaylist(): void {
     const playlistName = prompt('Enter playlist name:');
     if (!playlistName) return;
-
-    this.http.post<Playlist>('http://localhost:3000/playlists', { name: playlistName }).subscribe({
+  
+    this.http.post<Playlist>(`${this.uri12}/playlists`, { name: playlistName }).subscribe({
       next: (newPlaylist) => {
         this.playlists.push(newPlaylist);
+        console.log('Playlist Created Successfully:', newPlaylist);
       },
       error: (err) => console.error('Error creating playlist:', err),
     });

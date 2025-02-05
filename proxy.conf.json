@@ -1,0 +1,8 @@
+{
+    "/api": {
+
+      "target":    "mongodb+srv://ananthakrishnans0608:ArjunAk1234@spotify1.gqzqg.mongodb.net/music?retryWrites=true&w=majority&appName=spotify1",
+      "secure":    false
+    }
+  }
+  

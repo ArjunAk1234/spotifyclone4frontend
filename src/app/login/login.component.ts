@@ -21,6 +21,7 @@ export class LoginComponent {
         console.log('Login successful!');
         this.router.navigate(['/home']).then(() => {
           // alert(localStorage.getItem('isLoggedIn'));
+          localStorage.setItem('isLoggedIn', 'true');  // Set the logged-in status in local storage for persistence
        
           window.location.reload();  // This will force a full page reload
         });// Navigate to the home page

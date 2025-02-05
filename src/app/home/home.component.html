@@ -1,4 +1,8 @@
 <!-- Navbar -->
+<div *ngIf="isLoading1()" class="loading-overlay">
+  <div class="spinner"></div>
+</div>
+
 <div class="navbar">
   <h4 class="navbar-logo">Spotify</h4>
   <div class="navbar-search">
@@ -9,9 +13,10 @@
     <button *ngIf="!isLoggedIn" (click)="goToLogin()">Login</button>
     <button *ngIf="isLoggedIn" (click)="logout()">Logout</button>
     <!-- Upload Song Button -->
-    <button *ngIf="isLoggedIn" (click)="openUploadSongModal()" class="btn btn-primary">Upload Song</button>
+    <button *ngIf="isLoggedIn && !isloggedin1() " (click)="openUploadSongModal()" class="btn btn-primary">Upload Song</button>
   </div>
 </div>
+
 <div *ngIf="showUploadSongModal" class="modal12">
   <div class="modal-content1">
     <h3>Upload Song</h3>
@@ -37,10 +42,8 @@
 <div class="spotify-sidebar">
   <a class="spotify-logo" (click)="goTohome()">Spotify</a>
   <ul class="nav-links">
-    <li *ngIf="isLoggedIn"><a routerLink="/liked-songs">Liked Songs</a></li>
-    
     <!-- Playlist Section -->
-    <div *ngIf="isLoggedIn">
+    <div *ngIf="isLoggedIn && !isloggedin1()">
       <button (click)="createPlaylist()" class="btn btn-primary">Playlists + </button>
       <ul class="playlist-list">
         <li *ngFor="let playlist of playlists" (click)="selectPlaylist(playlist)" class="playlist-item">
@@ -59,11 +62,12 @@
       <!-- Show Playlist Songs -->
       <div *ngIf="selectedPlaylist">
         <h3 class="playlist-title">{{ selectedPlaylist.name }}</h3>
-        <button (click)="showAddSongModal()" class="btn btn-secondary">+ Add Songs</button>
-        <button *ngFor="let playlist of playlists" (click)="removePlaylist(playlist._id)" class="btn btn-danger">Delete</button>
+        <button (click)="showAddSongModal()" class="btn btn-secondary">Add Songs +</button>
+        <button (click)="removePlaylist(selectedPlaylist._id)" class="btn btn-danger">Delete</button>
         <ul class="playlist-songs">
           <li *ngFor="let song of selectedPlaylist.songs" class="song-item" (click)="playSong(song)">
-            <img [src]="'http://localhost:3000/public/' + song.albumCover" alt="Album Cover" class="album-cover">
+            <img [src]="song.albumCover" alt="Album Cover" class="album-cover">
+
             <div class="song-info">
               <p class="song-title">{{ song.title }}</p>
               <p class="song-artist">{{ song.artist }}</p>
@@ -77,7 +81,7 @@
       <div *ngIf="!selectedPlaylist && filteredSongs.length > 0">
         <h3>All Songs</h3>
         <div *ngFor="let song of filteredSongs" class="song-item" (click)="playSong(song)">
-          <img [src]="'http://localhost:3000/public/' + song.albumCover" alt="Album Cover" class="album-cover">
+          <img [src]="song.albumCover" alt="Album Cover" class="album-cover" >
           <div class="song-info">
             <p class="song-title">{{ song.title }}</p>
             <p class="song-artist">{{ song.artist }}</p>
@@ -116,7 +120,7 @@
 <!-- Bottom Bar with Controls -->
 <div *ngIf="currentSong" class="bottom-bar">
   <div class="song-player">
-    <img [src]="'http://localhost:3000/public/' + currentSong.albumCover" alt="Album Cover" class="album-cover-large">
+    <img [src]="currentSong.albumCover" alt="Album Cover" class="album-cover-large" >
     <div class="controls">
       <button (click)="previousSong()" class="btn btn-secondary">Previous</button>
       <button (click)="playSong(currentSong)" class="btn btn-primary">
