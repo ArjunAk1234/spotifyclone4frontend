@@ -4,7 +4,7 @@
 </div>
 
 <div class="navbar">
-  <h3 class="navbar-logo">Spotify Clone</h3>
+  <h3 class="navbar-logo" (click)="callreload()">Spotify Clone</h3>
   <div class="navbar-search">
     <input type="text" placeholder="Search" class="search-bar" [(ngModel)]="searchQuery" (input)="searchSongs()">
   </div>
