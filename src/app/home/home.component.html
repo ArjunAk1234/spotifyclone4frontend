@@ -72,7 +72,7 @@
               <p class="song-title">{{ song.title }}</p>
               <p class="song-artist">{{ song.artist }}</p>
             </div>
-            <button (click)="removeSongFromPlaylist(song._id)" class="btn btn-danger">Remove</button>
+            <button (click)="removeSongFromPlaylist(song._id,$event)" class="btn btn-danger">Remove</button>
           </li>
         </ul>
       </div>
