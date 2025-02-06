@@ -283,10 +283,16 @@ isLoading1(): any{
             this.selectedPlaylist.songs = [...updatedPlaylist.songs];
           }
           console.log('Song Added Successfully:', songId);
+          this.callreload();
         },
         error: (err) => console.error('Error adding song:', err),
       });
+      
+  }
+  callreload(): void {
+    setTimeout(() => {
       window.location.reload();
+    }, 500);
   }
   
   removeSongFromPlaylist(songId: string): void {
@@ -306,6 +312,7 @@ isLoading1(): any{
           this.filteredSongs = [...response.updatedPlaylist.songs];
   
           console.log('Song removed successfully:', songId);
+          this.callreload();
         } else {
           console.error('Failed to remove song from database');
         }
@@ -315,7 +322,7 @@ isLoading1(): any{
         alert('Failed to remove song. Please try again.');
       },
     });
-    window.location.reload();
+   
   }
 
   
