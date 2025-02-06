@@ -47,7 +47,8 @@ export class HomeComponent implements OnInit {
   selectedSongs: Set<string> = new Set(); 
   // newSong = { title: '', artist: '', songFile: null as File | null, albumCoverFile: null as File | null }; // Store file and details
   newSong = { title: '', artist: '', songFile: null as File | null, albumCoverFile: null as File | null };
-  uri12 = 'https://spotifyclone4backend-1.onrender.com';
+  uri12 = 'http://localhost:3000';
+  userId: string | null | undefined;
 
   constructor(
     private authService: AuthService,
@@ -56,20 +57,31 @@ export class HomeComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    this.authService.loggedIn$.subscribe((state) => {
-      this.isLoggedIn = state;
-      this.fetchSongs();
-      if (state) {
-        this.username = this.authService.getUsername() || 'User , please logout and re-login';
-        this.fetchPlaylists();
-      }
-    });
 
+  ngOnInit(): void {
+    // Check login status from localStorage when the component is initialized
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    this.isLoggedIn = isLoggedIn;
+    this.fetchSongs(); 
+    if (isLoggedIn) {
+      this.username = this.authService.getUsername() || 'User, please logout and re-login';
+      this.userId = this.authService.getUserId(); // Get the userId from localStorage
+      console.log('User is logged in:', this.userId); // Debugging
+      // Fetch songs after login
+      this.fetchPlaylists(); // Fetch playlists after login
+    } else {
+      this.username = '';
+      this.userId = null;
+    }
+  
+    // Audio progress updates
     this.audio.addEventListener('timeupdate', () => {
       if (this.audio.duration) {
         this.seekPosition = (this.audio.currentTime / this.audio.duration) * 100;
       }
+    });
+    this.audio.addEventListener('ended', () => {
+      this.nextSong(); // Move to the next song when the current one finishes
     });
   }
   
@@ -102,16 +114,26 @@ isLoading1(): any{
   return localStorage.getItem("isLoading")==='true';
 }
 
-
   fetchPlaylists(): void {
-    this.http.get<Playlist[]>(`${this.uri12}/playlists`).subscribe({
+    const userId = this.authService.getUserId(); // Ensure this method returns the correct user ID
+    if (!userId) {
+      console.error('User ID not found. Cannot fetch playlists.');
+      return;
+    }
+  
+    const url = `${this.uri12}/playlists?userId=${userId}`;
+    console.log('Fetching playlists for URL:', url); // Debugging URL
+  
+    this.http.get<Playlist[]>(url).subscribe({
       next: (data) => {
         this.playlists = data;
+        console.log('Fetched playlists:', this.playlists); // Debugging
       },
       error: (err) => console.error('Error fetching playlists:', err),
     });
   }
-
+  
+  
   openUploadSongModal(): void {
     this.showUploadSongModal = true;
   }
@@ -161,14 +183,15 @@ isLoading1(): any{
     });
   }
   
-  
+
   selectPlaylist(playlist: Playlist): void {
     this.selectedPlaylist = {
       ...playlist,
-      songs: playlist.songs.map(song => ({
+      songs: playlist.songs.map((song) => ({
         ...song,
-        albumCover: song.albumCover ? `${this.uri12}/album-cover/${song._id}` : 'assets/default-cover.jpg'
-      }))
+        file: song.file || '',  // Ensure file property exists
+        albumCover: song.albumCover ? `${this.uri12}/album-cover/${song._id}` : 'assets/default-cover.jpg',
+      })),
     };
     this.filteredSongs = [...this.selectedPlaylist.songs]; // Ensure UI updates
   }
@@ -324,58 +347,54 @@ isLoading1(): any{
   
 
   
-
-playSong(song: Song): void {
-  if (!song || !song.file) {
-    console.error('No song or file provided.');
-    return;
-  }
-
-  if (this.currentSong && this.currentSong._id === song._id) {
-    // Toggle play/pause if the same song is clicked
-    if (this.isSongPlaying) {
-      this.audio.pause();
-      this.isSongPlaying = false;
-    } else {
-      this.audio.play();
-      this.isSongPlaying = true;
+  playSong(song: Song): void {
+    if (!song || !song.file) {
+      console.error('No song or file provided.');
+      return;
     }
-    return;
+    if (this.currentSong && this.currentSong._id === song._id) {
+      // Toggle play/pause if the same song is clicked
+      if (this.isSongPlaying) {
+        this.audio.pause();
+        this.isSongPlaying = false;
+      } else {
+        this.audio.play();
+        this.isSongPlaying = true;
+      }
+      return;
+    }
+  
+    this.audio.pause();
+    this.audio.currentTime = 0; // Reset time for new song
+  
+    if (typeof song.file === 'string') {
+      this.audio.src = `${this.uri12}/songs/${song._id}`;
+    } else if (typeof song.file === 'object' && song.file.type === 'Buffer' && Array.isArray(song.file.data)) {
+      const byteArray = new Uint8Array(song.file.data);
+      const blob = new Blob([byteArray.buffer], { type: 'audio/mp3' });
+      const audioUrl = URL.createObjectURL(blob);
+      this.audio.src = audioUrl;
+    } else {
+      console.error('Invalid file format:', song.file);
+      return;
+    }
+  
+    this.audio.load();
+    this.audio.play().then(() => {
+      this.isSongPlaying = true;
+      this.currentSong = song;
+      this.currentIndex = this.songs.findIndex((s) => s._id === song._id);
+    }).catch((err) => {
+      console.error('Error playing song:', err);
+    });
   }
+  
 
-  // If a different song is clicked, stop the current one
-  this.audio.pause();
-  this.audio.currentTime = 0; // Reset time for new song
-
-  if (typeof song.file === 'string') {
-    // Case 1: File is a URL/path
-    this.audio.src = `${this.uri12}/songs/${song._id}`; // Ensure correct URL
-  } else if (typeof song.file === 'object' && song.file.type === 'Buffer' && Array.isArray(song.file.data)) {
-    // Case 2: File is stored as a buffer
-    const byteArray = new Uint8Array(song.file.data);
-    const blob = new Blob([byteArray.buffer], { type: 'audio/mp3' });
-    const audioUrl = URL.createObjectURL(blob);
-    this.audio.src = audioUrl;
-  } else {
-    console.error('Invalid file format:', song.file);
-    return;
-  }
-
-  this.audio.load();
-  this.audio.play().then(() => {
-    this.isSongPlaying = true;
-    this.currentSong = song;
-    this.currentIndex = this.songs.findIndex(s => s._id === song._id);
-  }).catch(err => {
-    console.error('Error playing song:', err);
-  });
-}
-
-   
   
   logout(): void {
     localStorage.setItem('isLoggedIn1', "false"); 
     this.authService.logout();
+    window.location.reload();
     this.router.navigate(['/']);
   }
 
@@ -383,28 +402,50 @@ playSong(song: Song): void {
     return this.username == "User , please logout and re-login";
   }
  
+  // nextSong(): void {
+  //   const songList = this.selectedPlaylist ? this.selectedPlaylist.songs : this.songs;
+    
+  //   if (!songList.length) return; // No songs to play
+    
+  //   const currentIndex = songList.findIndex(song => song._id === this.currentSong?._id);
+  
+  //   if (currentIndex !== -1 && currentIndex < songList.length - 1) {
+  //     this.playSong(songList[currentIndex + 1]);
+  //   }
+  // }
   nextSong(): void {
     const songList = this.selectedPlaylist ? this.selectedPlaylist.songs : this.songs;
     
     if (!songList.length) return; // No songs to play
-    
-    const currentIndex = songList.findIndex(song => song._id === this.currentSong?._id);
   
-    if (currentIndex !== -1 && currentIndex < songList.length - 1) {
-      this.playSong(songList[currentIndex + 1]);
-    }
+    const currentIndex = songList.findIndex(song => song._id === this.currentSong?._id);
+    const nextIndex = (currentIndex + 1) % songList.length; // Loop back to first song
+  
+    this.playSong(songList[nextIndex]); // Play the next song
   }
   
+  
+  // previousSong(): void {
+  //   const songList = this.selectedPlaylist ? this.selectedPlaylist.songs : this.songs;
+    
+  //   if (!songList.length) return; // No songs to play
+    
+  //   const currentIndex = songList.findIndex(song => song._id === this.currentSong?._id);
+   
+  //   if (currentIndex > 0) {
+  //     this.playSong(songList[currentIndex - 1]);
+  //   }
+    
+  // }
   previousSong(): void {
     const songList = this.selectedPlaylist ? this.selectedPlaylist.songs : this.songs;
-    
-    if (!songList.length) return; // No songs to play
-    
-    const currentIndex = songList.findIndex(song => song._id === this.currentSong?._id);
   
-    if (currentIndex > 0) {
-      this.playSong(songList[currentIndex - 1]);
-    }
+    if (!songList.length) return; // No songs to play
+  
+    const currentIndex = songList.findIndex(song => song._id === this.currentSong?._id);
+    const prevIndex = (currentIndex - 1 + songList.length) % songList.length; // Loop to the last song when at the beginning
+  
+    this.playSong(songList[prevIndex]); // Play the previous song
   }
   
 
@@ -428,13 +469,19 @@ playSong(song: Song): void {
       );
     }
   }
-
-
   createPlaylist(): void {
     const playlistName = prompt('Enter playlist name:');
     if (!playlistName) return;
   
-    this.http.post<Playlist>(`${this.uri12}/playlists`, { name: playlistName }).subscribe({
+    const userId = this.authService.getUserId();  // Get the logged-in userId
+    if (!userId) {
+      console.error('User not logged in, cannot create playlist.');
+      return;
+    }
+  
+    const newPlaylist = { name: playlistName, userId };  // Pass userId along with playlist name
+  
+    this.http.post<Playlist>(`${this.uri12}/playlists`, newPlaylist).subscribe({
       next: (newPlaylist) => {
         this.playlists.push(newPlaylist);
         console.log('Playlist Created Successfully:', newPlaylist);
@@ -442,5 +489,5 @@ playSong(song: Song): void {
       error: (err) => console.error('Error creating playlist:', err),
     });
   }
+  
 }
-
