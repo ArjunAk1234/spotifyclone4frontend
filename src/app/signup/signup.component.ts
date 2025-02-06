@@ -1,13 +1,4 @@
-// import { Component } from '@angular/core';
 
-// @Component({
-//   selector: 'app-signup',
-//   templateUrl: './signup.component.html',
-//   styleUrls: ['./signup.component.css']
-// })
-// export class SignupComponent {
-
-// }
 import { Component } from '@angular/core';
 import { AuthService } from '../auth.services'; // Update the path if needed
 import { Router } from '@angular/router';
@@ -45,34 +36,3 @@ export class SignupComponent {
     });
   }
 }
-// import { Component } from '@angular/core';
-
-// @Component({
-//   selector: 'app-signup',
-//   templateUrl: './signup.component.html',
-//   styleUrls: ['./signup.component.css']
-// })
-// export class SignupComponent {
-//   username: string = '';
-//   email: string = '';
-//   password: string = '';
-//   confirmPassword: string = ''; // Add this property
-//   error: string | null = null;
-
-//   onSubmit(): void {
-//     if (this.password !== this.confirmPassword) {
-//       this.error = 'Passwords do not match';
-//       return;
-//     }
-
-//     // Add your form submission logic here
-//     console.log('Form submitted:', {
-//       username: this.username,
-//       email: this.email,
-//       password: this.password,
-//       confirmPassword: this.confirmPassword
-//     });
-
-//     this.error = null; // Clear error on successful validation
-//   }
-// }
