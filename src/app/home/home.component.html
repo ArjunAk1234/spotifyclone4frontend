@@ -4,7 +4,7 @@
 </div>
 
 <div class="navbar">
-  <h4 class="navbar-logo">Spotify</h4>
+  <h3 class="navbar-logo">Spotify Clone</h3>
   <div class="navbar-search">
     <input type="text" placeholder="Search" class="search-bar" [(ngModel)]="searchQuery" (input)="searchSongs()">
   </div>
@@ -40,7 +40,7 @@
 
 <!-- Sidebar -->
 <div class="spotify-sidebar">
-  <a class="spotify-logo" (click)="goTohome()">Spotify</a>
+  <p>welcome to my music streaming platform</p>
   <ul class="nav-links">
     <!-- Playlist Section -->
     <div *ngIf="isLoggedIn && !isloggedin1()">
