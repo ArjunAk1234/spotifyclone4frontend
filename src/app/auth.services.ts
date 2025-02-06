@@ -7,7 +7,7 @@ import { map } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'https://spotifyclone4backend-1.onrender.com'; // Use HTTP for local development
+  private apiUrl = 'https://spotifyclone4backend.onrender.com'; // Use HTTP for local development
  // Backend URL
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken()); // Initialize state based on token in localStorage
 
