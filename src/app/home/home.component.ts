@@ -295,7 +295,8 @@ isLoading1(): any{
     }, 500);
   }
   
-  removeSongFromPlaylist(songId: string): void {
+   removeSongFromPlaylist(songId: string, event : Event): void {
+    event.stopPropagation()
     
     if (!this.selectedPlaylist || !this.selectedPlaylist._id) {
       console.error("No playlist selected.");
