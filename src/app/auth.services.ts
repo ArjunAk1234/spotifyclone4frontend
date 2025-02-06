@@ -7,7 +7,8 @@ import { map } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'https://spotifyclone4backend-1.onrender.com'; // Backend URL
+  private apiUrl = 'http://localhost:3000'; // Use HTTP for local development
+ // Backend URL
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken()); // Initialize state based on token in localStorage
 
   loggedIn$ = this.loggedInSubject.asObservable(); // Observable to expose login state for the UI
@@ -25,23 +26,26 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/register`, { username, email, password });
   }
 
+
   login(username: string, password: string): Observable<any> {
-    localStorage.setItem('username', username);
-    return this.http
-      .post(`${this.apiUrl}/login`, { username, password })
+    localStorage.setItem('username', username);  // Store username
+  
+    return this.http.post(`${this.apiUrl}/login`, { username, password })
       .pipe(
         map((response: any) => {
-          if (response && response.token) {
-            localStorage.setItem('userId', response.userId);
-            localStorage.setItem('authToken', response.token); // Store the token
-            localStorage.setItem('username', username); // Store the username
-            this.loggedInSubject.next(true); // Notify observers that the user is logged in
-          };
+          if (response && response.userId && response.token) {
+            localStorage.setItem('userId', response.userId);  // Store userId
+            localStorage.setItem('authToken', response.token); // Store auth token
+            localStorage.setItem('isLoggedIn', 'true');  // Set login status to true
+  
+            // Notify observers that the user is logged in
+            this.loggedInSubject.next(true);
+          }
           return response;
         })
       );
   }
-
+  
   logout(): void {
     localStorage.removeItem('authToken');
     localStorage.removeItem('username');
