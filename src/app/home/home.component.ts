@@ -47,7 +47,7 @@ export class HomeComponent implements OnInit {
   selectedSongs: Set<string> = new Set(); 
   // newSong = { title: '', artist: '', songFile: null as File | null, albumCoverFile: null as File | null }; // Store file and details
   newSong = { title: '', artist: '', songFile: null as File | null, albumCoverFile: null as File | null };
-  uri12 = 'https://spotifyclone4backend.onrender.com';
+  uri12 = 'https://spotifyclone4backend.vercel.app';
   userId: string | null | undefined;
 
   constructor(
