@@ -89,7 +89,7 @@ fetchSongs(): void {
   localStorage.setItem("isLoading","true")
   this.isLoading = true; // Show loading spinner while fetching songs
   console.log(this.isLoading);
-  this.http.get<Song[]>(`${this.uri12}/songs`).subscribe({
+  this.http.get<Song[]>('https://spotifyclone4backend.vercel.app/songs').subscribe({
     next: (data) => {
       console.log("Fetched songs:", data); // Debugging output
       this.songs = data.map(song => ({
