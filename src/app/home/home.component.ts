@@ -47,7 +47,7 @@ export class HomeComponent implements OnInit {
   selectedSongs: Set<string> = new Set(); 
   // newSong = { title: '', artist: '', songFile: null as File | null, albumCoverFile: null as File | null }; // Store file and details
   newSong = { title: '', artist: '', songFile: null as File | null, albumCoverFile: null as File | null };
-  uri12 = 'https://spotifyclone4backend.vercel.app';
+  uri12 = 'https://spotifyclone4backend.onrender.com';
   userId: string | null | undefined;
 
   constructor(
@@ -89,7 +89,7 @@ fetchSongs(): void {
   localStorage.setItem("isLoading","true")
   this.isLoading = true; // Show loading spinner while fetching songs
   console.log(this.isLoading);
-  this.http.get<Song[]>('https://spotifyclone4backend.vercel.app/songs').subscribe({
+  this.http.get<Song[]>(`${this.uri12}/songs`).subscribe({
     next: (data) => {
       console.log("Fetched songs:", data); // Debugging output
       this.songs = data.map(song => ({
