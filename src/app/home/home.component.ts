@@ -10,7 +10,8 @@ export interface Song {
   artist: string;
   genre: string;
   // file: string;
-  file: string | { type: 'Buffer'; data: number[] };
+  // file: string | { type: 'Buffer'; data: number[] };
+  file:string,
   albumCover: string; // Make albumCover optional to prevent undefined errors
 }
 
@@ -98,7 +99,8 @@ fetchSongs(): void {
         title: song.title,
         artist: song.artist,
         genre: song.genre,
-        file: song.file,
+        // file: song.file,
+        file: `${this.uri12}/song/${song._id}`,
         albumCover: song.albumCover ? `${this.uri12}/album-cover/${song._id}` : 'assets/default-cover.jpg' // ✅ Set correct image URL
       }));
       this.filteredSongs = [...this.songs];
