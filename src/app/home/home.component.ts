@@ -10,8 +10,7 @@ export interface Song {
   artist: string;
   genre: string;
   // file: string;
-  // file: string | { type: 'Buffer'; data: number[] };
-  file:string,
+  file: string | { type: 'Buffer'; data: number[] };
   albumCover: string; // Make albumCover optional to prevent undefined errors
 }
 
@@ -48,8 +47,7 @@ export class HomeComponent implements OnInit {
   selectedSongs: Set<string> = new Set(); 
   // newSong = { title: '', artist: '', songFile: null as File | null, albumCoverFile: null as File | null }; // Store file and details
   newSong = { title: '', artist: '', songFile: null as File | null, albumCoverFile: null as File | null };
-  // uri12 = 'https://spotifyclone4backend.onrender.com';
-  uri12='https://spotifyclone4backend.vercel.app';
+  uri12 = 'https://spotifyclone4backend.onrender.com';
   userId: string | null | undefined;
 
   constructor(
@@ -99,8 +97,7 @@ fetchSongs(): void {
         title: song.title,
         artist: song.artist,
         genre: song.genre,
-        // file: song.file,
-        file: `${this.uri12}/song/${song._id}`,
+        file: song.file,
         albumCover: song.albumCover ? `${this.uri12}/album-cover/${song._id}` : 'assets/default-cover.jpg' // ✅ Set correct image URL
       }));
       this.filteredSongs = [...this.songs];
